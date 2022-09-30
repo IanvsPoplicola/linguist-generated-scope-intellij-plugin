@@ -1,4 +1,4 @@
-package org.jetbrains.plugins.template
+package com.github.ianvspoplicola.linguistgeneratedscopeintellijplugin
 
 import com.intellij.DynamicBundle
 import org.jetbrains.annotations.NonNls
