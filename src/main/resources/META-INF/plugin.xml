@@ -9,6 +9,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <applicationService serviceImplementation="com.github.ianvspoplicola.linguistgeneratedscopeintellijplugin.services.MyApplicationService"/>
         <projectService serviceImplementation="com.github.ianvspoplicola.linguistgeneratedscopeintellijplugin.services.MyProjectService"/>
+        <actionOnSave implementation="com.github.ianvspoplicola.linguistgeneratedscopeintellijplugin.listeners.UpdateScopeOnSave"/>
     </extensions>
 
     <applicationListeners>
