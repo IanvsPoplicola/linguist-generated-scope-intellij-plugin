@@ -166,16 +166,30 @@ class UpdateScopeAction : AnAction() {
         val matchAllSuffix = "/\\*\\*$".toRegex()
         intellijPattern = intellijPattern.replace(matchAllSuffix, "//*")
 
-        return setOf(intellijPattern)
+        // for the next step, first eliminate any ** that's a part of a file/directory name
+        val doubleAsterisksInWords1 = "(?:(?!^|/).)\\*\\*".toRegex() // any non-prefix ** not preceded by /
+        intellijPattern = intellijPattern.replace(doubleAsterisksInWords1, "*")
+        val doubleAsterisksInWords2 = "\\*\\*(?:(?!$|/).)".toRegex() // any non-suffix ** not followed by /
+        intellijPattern = intellijPattern.replace(doubleAsterisksInWords2, "*")
+        // for the remaining **/, change each to either an empty string or */
+        // we want to create all possible combinations
+        val intellijPatternParts = intellijPattern.split("**/")
+        val possibleAsteriskReplacements = arrayOf("", "*/")
+        val intellijPatterns = mutableSetOf<String>()
+        for (counter: Int in 0 until intellijPatternParts.size * 2) {
+            var subCounter = counter
+            var pattern = ""
+            for (index: Int in intellijPatternParts.indices) {
+                pattern += intellijPatternParts[index]
+                if (index != intellijPatternParts.size - 1) {
+                    pattern += possibleAsteriskReplacements[subCounter % 2]
+                    subCounter /= 2
+                }
+            }
+            intellijPatterns.add(pattern)
+        }
 
-        // TODO add combinations of "*/" and ""
-//        val intellijPatterns = mutableSetOf<String>()
-//        // if Git pattern starts with **/ or contains /**/, the closest IntelliJ alternative is */
-//        val matchZeroOrMoreDirectories = "(?:^|/)\\*\\*/".toRegex()
-//        intellijPatterns.add(intellijPattern.replace(matchZeroOrMoreDirectories, "*/"))
-//        intellijPatterns.add(intellijPattern.replace(matchZeroOrMoreDirectories, ""))
-//
-//        return intellijPatterns
+        return intellijPatterns
     }
 
     // This is a workaround for IntelliJ's inability to handle the '@' symbol
