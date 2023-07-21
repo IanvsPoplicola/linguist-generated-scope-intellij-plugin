@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.PerformInBackgroundOption
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -18,7 +19,10 @@ import java.util.*
 import java.util.stream.Collectors
 import java.util.stream.Stream
 
-const val SCOPE_NAME = "linguist-generated-true"
+private val LOGGER = logger<UpdateScopeAction>()
+
+const val SCOPE_NAME_GENERATED = "linguist-generated-true"
+const val SCOPE_NAME_NON_GENERATED = "linguist-generated-false"
 const val PROGRESS_NAME = "Updating linguist-generated scope"
 const val GITATTRIBUTES_FILE_NAME = ".gitattributes"
 
@@ -46,14 +50,20 @@ class UpdateScopeAction : AnAction() {
                 }
 
                 val localScopeManager = NamedScopeManager.getInstance(project)
-                if (localScopeManager.getScope(SCOPE_NAME) == null) {
-                    localScopeManager.addScope(localScopeManager.createScope(SCOPE_NAME, InvalidPackageSet("")))
+                if (localScopeManager.getScope(SCOPE_NAME_GENERATED) == null) {
+                    localScopeManager.addScope(localScopeManager.createScope(SCOPE_NAME_GENERATED, InvalidPackageSet("")))
+                }
+                if (localScopeManager.getScope(SCOPE_NAME_NON_GENERATED) == null) {
+                    localScopeManager.addScope(localScopeManager.createScope(SCOPE_NAME_NON_GENERATED, InvalidPackageSet("")))
                 }
 
-                val updatedScope = NamedScope(localScopeManager.getScope(SCOPE_NAME)!!.scopeId, localScopeManager.getScope(SCOPE_NAME)!!.icon, mapToPackageSet(filePatternsToIsGenerated))
+                val generatedFilesSet = mapToPackageSet(filePatternsToIsGenerated)
+                val updatedScopes = arrayOf(
+                        NamedScope(localScopeManager.getScope(SCOPE_NAME_GENERATED)!!.scopeId, localScopeManager.getScope(SCOPE_NAME_GENERATED)!!.icon, generatedFilesSet),
+                        NamedScope(localScopeManager.getScope(SCOPE_NAME_NON_GENERATED)!!.scopeId, localScopeManager.getScope(SCOPE_NAME_NON_GENERATED)!!.icon, ComplementPackageSet(generatedFilesSet)))
 
-                val unchangedScopes = Stream.of(*localScopeManager.editableScopes).filter { editableScope -> editableScope.scopeId != SCOPE_NAME }.collect(Collectors.toList())
-                val scopes = unchangedScopes.toTypedArray().plus(updatedScope)
+                val unchangedScopes = Stream.of(*localScopeManager.editableScopes).filter { editableScope -> editableScope.scopeId != SCOPE_NAME_GENERATED && editableScope.scopeId != SCOPE_NAME_NON_GENERATED }.collect(Collectors.toList())
+                val scopes = unchangedScopes.toTypedArray().plus(updatedScopes)
                 localScopeManager.scopes = scopes
             }
         })
@@ -64,16 +74,12 @@ class UpdateScopeAction : AnAction() {
             return InvalidPackageSet("")
         }
 
-        val generatedFiles = ArrayList<FilePatternPackageSet>();
+        val generatedFiles = ArrayList<FilePatternPackageSet>()
+        val nonGeneratedFiles = ArrayList<FilePatternPackageSet>()
         filePatternsToIsGenerated.forEach { (filePattern, isGenerated) ->
             if (isGenerated) {
                 generatedFiles.add(FilePatternPackageSet(null, filePattern))
-            }
-        }
-
-        val nonGeneratedFiles = ArrayList<FilePatternPackageSet>();
-        filePatternsToIsGenerated.forEach { (filePattern, isGenerated) ->
-            if (!isGenerated) {
+            } else {
                 nonGeneratedFiles.add(FilePatternPackageSet(null, filePattern))
             }
         }
