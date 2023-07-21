@@ -106,17 +106,24 @@ class UpdateScopeAction : AnAction() {
                             if (!shouldReadLine(line)) {
                                 continue
                             }
+                            var relativePath = line.split(" ")[0]
 
-                            val relativePath = line.split(" ")[0]
-                            val srcPath = replaceAtSymbol(file.virtualFile.path //
-                                    .removePrefix(project.basePath!! + "/").removeSuffix(GITATTRIBUTES_FILE_NAME) + relativePath)
-                            if (srcPath == null) {
+                            val inverted = relativePath.startsWith("!")
+                            relativePath = relativePath.removePrefix("!")
+
+                            val intellijRelativePaths = mapGitPatternToIntellijPattern(relativePath)
+                            val srcPaths = intellijRelativePaths.map { path ->
+                                replaceAtSymbol(
+                                        file.virtualFile.path.removePrefix(project.basePath!! + "/").removeSuffix(GITATTRIBUTES_FILE_NAME) + path)
+                            }.toSet()
+                            if (srcPaths.isEmpty()) {
                                 continue
                             }
-                            if (filePatternsToIsGenerated[srcPath] == false) {
-                                continue // if there's a conflict, avoid false positives
+                            srcPaths.forEach { srcPath ->
+                                if (filePatternsToIsGenerated[srcPath!!] != false) { // if there's a conflict, avoid false positives
+                                    filePatternsToIsGenerated[srcPath] = line.endsWith("true") != inverted
+                                }
                             }
-                            filePatternsToIsGenerated[srcPath] = line.endsWith("true")
                         }
                         return true
                     }
@@ -144,6 +151,31 @@ class UpdateScopeAction : AnAction() {
         }
 
         return true
+    }
+
+    private fun mapGitPatternToIntellijPattern(line: String): Set<String> {
+        var intellijPattern = line.removePrefix("/")
+
+        // if Git pattern has /**/ next to a /*/, remove the /**/ part
+        val matchOneOrMoreDirectories1 = "(?:^|/)\\*\\*/\\*(?:$|/)".toRegex()
+        intellijPattern = intellijPattern.replace(matchOneOrMoreDirectories1, "*")
+        val matchOneOrMoreDirectories2 = "(?:^|/)\\*/\\*\\*(?:$|/)".toRegex()
+        intellijPattern = intellijPattern.replace(matchOneOrMoreDirectories2, "*")
+
+        // if Git pattern ends with /**, the IntelliJ equivalent is //*
+        val matchAllSuffix = "/\\*\\*$".toRegex()
+        intellijPattern = intellijPattern.replace(matchAllSuffix, "//*")
+
+        return setOf(intellijPattern)
+
+        // TODO add combinations of "*/" and ""
+//        val intellijPatterns = mutableSetOf<String>()
+//        // if Git pattern starts with **/ or contains /**/, the closest IntelliJ alternative is */
+//        val matchZeroOrMoreDirectories = "(?:^|/)\\*\\*/".toRegex()
+//        intellijPatterns.add(intellijPattern.replace(matchZeroOrMoreDirectories, "*/"))
+//        intellijPatterns.add(intellijPattern.replace(matchZeroOrMoreDirectories, ""))
+//
+//        return intellijPatterns
     }
 
     // This is a workaround for IntelliJ's inability to handle the '@' symbol

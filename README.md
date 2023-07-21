@@ -1,5 +1,24 @@
 # linguist-generated-scope-intellij-plugin
 
+## Translating Git's pattern to IntelliJ scope's pattern
+References:
+* Git's file pattern: https://www.git-scm.com/docs/gitignore#_pattern_format
+* IntelliJ scope's file pattern: https://www.jetbrains.com/help/idea/scope-language-syntax-reference.html
+
+| Git pattern   | What it means                            | Closest IntelliJ equivalent             | Differences                      |
+|---------------|------------------------------------------|-----------------------------------------|----------------------------------|
+| `!` prefix    | The pattern is inverted                  | N/A (inversion done in code)            | None                             |
+| `**/` prefix  | Matches in any directory                 | `*/` prefix                             | Matches ONE OR MORE directories  |
+| `/**` suffix  | Matches everything in current directory  | `//*` suffix                            | None                             |
+| `/**/` middle | Matches ZERO OR MORE directories         | `/*/` middle                            | Matches ONE OR MORE directories  |
+| `*/` prefix   | Matches EXACTLY ONE directory            | `*/` prefix                             | Matches ZERO OR MORE directories |
+| `/*` suffix   | Matches EXACTLY ONE directory            | `/*` suffix                             | None                             |
+| `/*/` middle  | Matches EXACTLY ONE directory            | `/*/` middle                            | Matches ONE OR MORE directories  |
+| `*` in a word | Matches any number of non-`/` characters | `*`                                     | None                             |
+| `?` in a word | Matches exactly one character            | None (IntelliJ says: `unexpected '?'`)  | Not available                    |
+
+There's a special case where the Git pattern is `*/**/` or `/**/*`; in this case it should be translated to just `/*/`, so they both match one or more directories.
+
 ![Build](https://github.com/IanvsPoplicola/linguist-generated-scope-intellij-plugin/workflows/Build/badge.svg)
 [![Version](https://img.shields.io/jetbrains/plugin/v/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)
@@ -13,14 +32,6 @@
 - [ ] Set the Plugin ID in the above README badges.
 - [ ] Set the [Deployment Token](https://plugins.jetbrains.com/docs/marketplace/plugin-upload.html).
 - [ ] Click the <kbd>Watch</kbd> button on the top of the [IntelliJ Platform Plugin Template][template] to be notified about releases containing new features and fixes.
-
-<!-- Plugin description -->
-This Fancy IntelliJ Platform Plugin is going to be your implementation of the brilliant ideas that you have.
-
-This specific section is a source for the [plugin.xml](/src/main/resources/META-INF/plugin.xml) file which will be extracted by the [Gradle](/build.gradle.kts) during the build process.
-
-To keep everything working, do not remove `<!-- ... -->` sections. 
-<!-- Plugin description end -->
 
 ## Installation
 
