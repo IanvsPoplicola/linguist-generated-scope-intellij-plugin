@@ -1,5 +1,20 @@
 # linguist-generated-scope-intellij-plugin
 
+<!-- Plugin description -->
+
+GitHub supports the <a href="https://docs.github.com/en/repositories/working-with-files/managing-files/customizing-how-changed-files-appear-on-github">linguist-generated</a>
+attribute in `.gitattributes` files, such that any file matching a pattern tagged with `linguist-generated=true`
+does not show their diffs in a pull request.
+
+This plugin takes advantage of that information, and creates a scope that matches any of the `linguist-generated=true`
+file patterns **but not** any of the `linguist-generated=false` file patterns in the entire project.
+You can then set a custom colour for that scope, so that these generated files are highlighted with that colour in IntelliJ's project files sidebar.
+
+To set the scope's colour, go to _Preferences > Appearance & Behavior > File Colors_.
+
+To view/delete the scope, go to _Preferences > Appearance & Behavior > Scopes_.
+<!-- Plugin description end -->
+
 ## Translating Git's pattern to IntelliJ scope's pattern
 References:
 * Git's file pattern: https://www.git-scm.com/docs/gitignore#_pattern_format
