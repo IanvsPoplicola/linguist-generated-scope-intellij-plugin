@@ -120,7 +120,7 @@ class UpdateScopeAction : AnAction() {
                                 continue
                             }
                             srcPaths.forEach { srcPath ->
-                                if (filePatternsToIsGenerated[srcPath!!] != false) { // if there's a conflict, avoid false positives
+                                if (srcPath != null && filePatternsToIsGenerated[srcPath] != false) { // if there's a conflict, avoid false positives
                                     filePatternsToIsGenerated[srcPath] = line.endsWith("true") != inverted
                                 }
                             }
@@ -176,7 +176,7 @@ class UpdateScopeAction : AnAction() {
         val intellijPatternParts = intellijPattern.split("**/")
         val possibleAsteriskReplacements = arrayOf("", "*/")
         val intellijPatterns = mutableSetOf<String>()
-        for (counter: Int in 0 until intellijPatternParts.size * 2) {
+        for (counter: Int in 0 until (intellijPatternParts.size - 1) * 2) {
             var subCounter = counter
             var pattern = ""
             for (index: Int in intellijPatternParts.indices) {
