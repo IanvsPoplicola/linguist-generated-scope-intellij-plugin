@@ -1,10 +1,12 @@
 package com.github.ianvspoplicola.linguistgeneratedscopeintellijplugin.actions
 
+import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx
 import com.intellij.openapi.fileEditor.impl.LoadTextUtil
 import com.intellij.openapi.progress.PerformInBackgroundOption
 import com.intellij.openapi.progress.ProgressIndicator
@@ -72,6 +74,16 @@ class UpdateScopeAction : AnAction() {
                 val fileColorManager = FileColorManager.getInstance(project)
                 if (fileColorManager.getScopeColor(SCOPE_NAME_GENERATED) == null) {
                     fileColorManager.addScopeColor(SCOPE_NAME_GENERATED, SCOPE_DEFAULT_COLOUR, false)
+                }
+
+                // update project view
+                ProjectView.getInstance(project).refresh()
+                ProjectView.getInstance(project).currentProjectViewPane?.updateFromRoot(true)
+
+                // update open tabs
+                val editorManagerEx = FileEditorManagerEx.getInstanceEx(project)
+                for (openFile in editorManagerEx.openFiles) {
+                    editorManagerEx.updateFilePresentation(openFile!!)
                 }
             }
         })
