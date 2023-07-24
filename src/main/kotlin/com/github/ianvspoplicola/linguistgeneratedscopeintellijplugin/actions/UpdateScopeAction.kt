@@ -5,12 +5,13 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileEditor.impl.LoadTextUtil
 import com.intellij.openapi.progress.PerformInBackgroundOption
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiFileSystemItem
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.scope.packageSet.*
@@ -99,10 +100,10 @@ class UpdateScopeAction : AnAction() {
         val filePatternsToIsGenerated = TreeMap<String, Boolean>()
         FilenameIndex.processFilesByName(GITATTRIBUTES_FILE_NAME, //
                 false, //
-                false, //
-                object : Processor<PsiFileSystemItem> {
-                    override fun process(file: PsiFileSystemItem): Boolean {
-                        for (line in file.text.split("\n")) {
+                GlobalSearchScope.projectScope(project), //
+                object : Processor<VirtualFile> {
+                    override fun process(file: VirtualFile): Boolean {
+                        for (line in LoadTextUtil.loadText(file).split("\n")) {
                             if (!shouldReadLine(line)) {
                                 continue
                             }
@@ -114,7 +115,7 @@ class UpdateScopeAction : AnAction() {
                             val intellijRelativePaths = mapGitPatternToIntellijPattern(relativePath)
                             val srcPaths = intellijRelativePaths.map { path ->
                                 replaceAtSymbol(
-                                        file.virtualFile.path.removePrefix(project.basePath!! + "/").removeSuffix(GITATTRIBUTES_FILE_NAME) + path)
+                                        file.path.removePrefix(project.basePath!! + "/").removeSuffix(GITATTRIBUTES_FILE_NAME) + path)
                             }.toSet()
                             if (srcPaths.isEmpty()) {
                                 continue
@@ -127,9 +128,7 @@ class UpdateScopeAction : AnAction() {
                         }
                         return true
                     }
-                }, //
-                GlobalSearchScope.projectScope(project), //
-                project //
+                } //
         )
         return filePatternsToIsGenerated
     }
