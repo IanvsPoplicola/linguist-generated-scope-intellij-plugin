@@ -15,6 +15,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.search.scope.packageSet.*
+import com.intellij.ui.FileColorManager
 import com.intellij.util.Processor
 import java.util.*
 import java.util.stream.Collectors
@@ -22,6 +23,7 @@ import java.util.stream.Stream
 
 private val LOGGER = logger<UpdateScopeAction>()
 
+const val SCOPE_DEFAULT_COLOUR = "630330" // https://htmlcolorcodes.com/colors/tyrian-purple/
 const val SCOPE_NAME_GENERATED = "linguist-generated-true"
 const val SCOPE_NAME_NON_GENERATED = "linguist-generated-false"
 const val PROGRESS_NAME = "Updating linguist-generated scope"
@@ -66,6 +68,11 @@ class UpdateScopeAction : AnAction() {
                 val unchangedScopes = Stream.of(*localScopeManager.editableScopes).filter { editableScope -> editableScope.scopeId != SCOPE_NAME_GENERATED && editableScope.scopeId != SCOPE_NAME_NON_GENERATED }.collect(Collectors.toList())
                 val scopes = unchangedScopes.toTypedArray().plus(updatedScopes)
                 localScopeManager.scopes = scopes
+
+                val fileColorManager = FileColorManager.getInstance(project)
+                if (fileColorManager.getScopeColor(SCOPE_NAME_GENERATED) == null) {
+                    fileColorManager.addScopeColor(SCOPE_NAME_GENERATED, SCOPE_DEFAULT_COLOUR, false)
+                }
             }
         })
     }
