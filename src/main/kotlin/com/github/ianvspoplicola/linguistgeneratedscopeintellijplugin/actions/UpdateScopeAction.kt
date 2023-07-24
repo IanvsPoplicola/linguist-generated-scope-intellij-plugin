@@ -192,6 +192,9 @@ class UpdateScopeAction : AnAction() {
         // for the remaining **/, change each to either an empty string or */
         // we want to create all possible combinations
         val intellijPatternParts = intellijPattern.split("**/")
+        if (intellijPatternParts.size < 2) {
+            return setOf(intellijPattern) // return directly if no **/ is found
+        }
         val possibleAsteriskReplacements = arrayOf("", "*/")
         val intellijPatterns = mutableSetOf<String>()
         for (counter: Int in 0 until (intellijPatternParts.size - 1) * 2) {
