@@ -20,19 +20,21 @@ References:
 * Git's file pattern: https://www.git-scm.com/docs/gitignore#_pattern_format
 * IntelliJ scope's file pattern: https://www.jetbrains.com/help/idea/scope-language-syntax-reference.html
 
-| Git pattern   | What it means                            | Closest IntelliJ equivalent             | Differences                      |
-|---------------|------------------------------------------|-----------------------------------------|----------------------------------|
-| `!` prefix    | The pattern is inverted                  | N/A (inversion done in code)            | None                             |
-| `**/` prefix  | Matches in any directory                 | `*/` prefix                             | Matches ONE OR MORE directories  |
-| `/**` suffix  | Matches everything in current directory  | `//*` suffix                            | None                             |
-| `/**/` middle | Matches ZERO OR MORE directories         | `/*/` middle                            | Matches ONE OR MORE directories  |
-| `*/` prefix   | Matches EXACTLY ONE directory            | `*/` prefix                             | Matches ZERO OR MORE directories |
-| `/*` suffix   | Matches EXACTLY ONE directory            | `/*` suffix                             | None                             |
-| `/*/` middle  | Matches EXACTLY ONE directory            | `/*/` middle                            | Matches ONE OR MORE directories  |
-| `*` in a word | Matches any number of non-`/` characters | `*`                                     | None                             |
-| `?` in a word | Matches exactly one character            | None (IntelliJ says: `unexpected '?'`)  | Not available                    |
+| Git pattern   | What it means                                          | Closest IntelliJ equivalent             | Differences                      |
+|---------------|--------------------------------------------------------|-----------------------------------------|----------------------------------|
+| `!` prefix    | The pattern is inverted                                | N/A (inversion done in code)            | None                             |
+| `**/` prefix  | Matches in any directory                               | `*/` prefix                             | Matches ONE OR MORE directories  |
+| `/**` suffix  | Matches files and sub-directories in current directory | `//*` suffix                            | None                             |
+| `/**/` middle | Matches ZERO OR MORE directories                       | `/*/` middle                            | Matches ONE OR MORE directories  |
+| `*/` prefix   | Matches EXACTLY ONE directory                          | `*/` prefix                             | Matches ZERO OR MORE directories |
+| `/*` suffix   | Matches files (not directories) in current directory   | `/*` suffix                             | None                             |
+| `/*/` middle  | Matches EXACTLY ONE directory                          | `/*/` middle                            | Matches ONE OR MORE directories  |
+| `*` in a word | Matches any number of non-`/` characters               | `*`                                     | None                             |
+| `?` in a word | Matches exactly one character                          | None (IntelliJ says: `unexpected '?'`)  | Not available                    |
 
-There's a special case where the Git pattern is `*/**/` or `/**/*`; in this case it should be translated to just `/*/`, so they both match one or more directories.
+There's a special case where the Git pattern is `*/**` or `**/*`:
+* if this occurs at the start or middle of the pattern, it should be translated to just `*/`, so they both match one or more directories
+* if this occurs at the end of the pattern, it should be translated to `//*`, to match everything at least one directory below
 
 ![Build](https://github.com/IanvsPoplicola/linguist-generated-scope-intellij-plugin/workflows/Build/badge.svg)
 [![Version](https://img.shields.io/jetbrains/plugin/v/PLUGIN_ID.svg)](https://plugins.jetbrains.com/plugin/PLUGIN_ID)

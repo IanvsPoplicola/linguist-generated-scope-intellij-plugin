@@ -132,15 +132,16 @@ class UpdateScopeAction : AnAction() {
                             relativePath = relativePath.removePrefix("!")
 
                             val intellijRelativePaths = mapGitPatternToIntellijPattern(relativePath)
-                            val srcPaths = intellijRelativePaths.map { path ->
-                                replaceAtSymbol(
-                                        file.path.removePrefix(project.basePath!! + "/").removeSuffix(GITATTRIBUTES_FILE_NAME) + path)
+                            val currentDirectoryPath = file.path.removePrefix(project.basePath!! + "/").removeSuffix(GITATTRIBUTES_FILE_NAME)
+                            val srcPaths = intellijRelativePaths.mapNotNull {
+                                var path = it
+                                if (currentDirectoryPath.endsWith("/") && path.startsWith("/")) {
+                                    path = path.removePrefix("/")
+                                }
+                                replaceAtSymbol(currentDirectoryPath + path)
                             }.toSet()
-                            if (srcPaths.isEmpty()) {
-                                continue
-                            }
                             srcPaths.forEach { srcPath ->
-                                if (srcPath != null && filePatternsToIsGenerated[srcPath] != false) { // if there's a conflict, avoid false positives
+                                if (filePatternsToIsGenerated[srcPath] != false) { // if there's a conflict, avoid false positives
                                     filePatternsToIsGenerated[srcPath] = line.endsWith("true") != inverted
                                 }
                             }
@@ -172,17 +173,25 @@ class UpdateScopeAction : AnAction() {
     }
 
     private fun mapGitPatternToIntellijPattern(line: String): Set<String> {
-        var intellijPattern = line.removePrefix("/")
+        var intellijPattern = line.trimStart('/') // standardise the pattern to not have leading /
+
+        // if Git pattern ends with */**, the IntelliJ equivalent is //*
+        val matchAllSuffix1 = "(?:^|/)\\*/\\*\\*$".toRegex()
+        intellijPattern = intellijPattern.replace(matchAllSuffix1, "//*")
+
+        // if Git pattern ends with **/*, the IntelliJ equivalent is //*
+        val matchAllSuffix2 = "(?:^|/)\\*\\*/\\*$".toRegex()
+        intellijPattern = intellijPattern.replace(matchAllSuffix2, "//*")
+
+        // if Git pattern ends with **, the IntelliJ equivalent is //*
+        val matchAllSuffix3 = "(?:^|/)\\*\\*$".toRegex()
+        intellijPattern = intellijPattern.replace(matchAllSuffix3, "//*")
 
         // if Git pattern has /**/ next to a /*/, remove the /**/ part
-        val matchOneOrMoreDirectories1 = "(?:^|/)\\*\\*/\\*(?:$|/)".toRegex()
+        val matchOneOrMoreDirectories1 = "(?:(?=^|/).)\\*\\*/\\*(?:(?=$|/).)".toRegex()
         intellijPattern = intellijPattern.replace(matchOneOrMoreDirectories1, "*")
-        val matchOneOrMoreDirectories2 = "(?:^|/)\\*/\\*\\*(?:$|/)".toRegex()
+        val matchOneOrMoreDirectories2 = "(?:(?=^|/).)\\*/\\*\\*(?:(?=\$|/).)".toRegex()
         intellijPattern = intellijPattern.replace(matchOneOrMoreDirectories2, "*")
-
-        // if Git pattern ends with /**, the IntelliJ equivalent is //*
-        val matchAllSuffix = "/\\*\\*$".toRegex()
-        intellijPattern = intellijPattern.replace(matchAllSuffix, "//*")
 
         // for the next step, first eliminate any ** that's a part of a file/directory name
         val doubleAsterisksInWords1 = "(?:(?!^|/).)\\*\\*".toRegex() // any non-prefix ** not preceded by /
