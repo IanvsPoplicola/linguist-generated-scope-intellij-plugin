@@ -2,6 +2,7 @@
 
 # linguist-generated-scope-intellij-plugin Changelog
 
-## [Unreleased]
+## Version 0.1.0
 ### Added
-- Initial scaffold created from [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template)
+- Create/update the `linguist-generated-true` and `linguist-generated-false` local scopes in your IntelliJ by clicking _Code > Sync Generated Files Scope_
+- Assign default colour to the `linguist-generated-true` scope, if no colour is already assigned
