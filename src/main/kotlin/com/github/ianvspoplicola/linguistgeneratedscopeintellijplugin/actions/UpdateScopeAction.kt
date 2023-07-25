@@ -14,6 +14,8 @@ import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.FilenameIndex
 import com.intellij.psi.search.GlobalSearchScope
@@ -134,13 +136,13 @@ class UpdateScopeAction : AnAction() {
                                 relativePath = relativePath.removePrefix("!")
 
                                 val intellijRelativePaths = mapGitPatternToIntellijPattern(relativePath)
-                                val currentDirectoryPath = file.path.removePrefix(project.basePath!! + "/").removeSuffix(GITATTRIBUTES_FILE_NAME)
+                                val currentDirectoryRelativePath = getRelativeDirectoryPath(project, file)
                                 val srcPaths = intellijRelativePaths.mapNotNull {
                                     var path = it
-                                    if (currentDirectoryPath.endsWith("/") && path.startsWith("/")) {
+                                    if (currentDirectoryRelativePath.endsWith("/") && path.startsWith("/")) {
                                         path = path.removePrefix("/")
                                     }
-                                    replaceAtSymbol(currentDirectoryPath + path)
+                                    replaceAtSymbol(currentDirectoryRelativePath + path)
                                 }.toSet()
                                 srcPaths.forEach { srcPath ->
                                     if (filePatternsToIsGenerated[srcPath] != false) { // if there's a conflict, avoid false positives
@@ -172,6 +174,15 @@ class UpdateScopeAction : AnAction() {
             }
 
             return true
+        }
+
+        private fun getRelativeDirectoryPath(project: Project, file: VirtualFile): String {
+            val sourceRoot = ProjectFileIndex.getInstance(project).getSourceRootForFile(file)
+            var currentDirectoryRelativePath = file.path
+            if (sourceRoot != null && VfsUtilCore.getRelativePath(file, sourceRoot) != null) {
+                currentDirectoryRelativePath = VfsUtilCore.getRelativePath(file, sourceRoot)!!
+            }
+            return currentDirectoryRelativePath.removeSuffix(GITATTRIBUTES_FILE_NAME)
         }
 
         // This is a workaround for IntelliJ's inability to handle the '@' symbol
