@@ -2,6 +2,8 @@
 
 # linguist-generated-scope-intellij-plugin Changelog
 
+## [Unreleased]
+
 ## Version 0.1.1
 - Fix crash due to some unused files being in the project
 - Update readme to have more helpful installation steps
