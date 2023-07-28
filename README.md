@@ -10,14 +10,24 @@ This plugin takes advantage of that information, and creates a scope that matche
 file patterns **but not** any of the `linguist-generated=false` file patterns in the entire project.
 You can then set a custom colour for that scope, so that these generated files are highlighted with that colour in IntelliJ's project files sidebar.
 
-To set the scope's colour, go to _Preferences > Appearance & Behavior > File Colors_.
+To set the scope's colour, go to <kbd>Preferences</kbd> > <kbd>Appearance & Behavior</kbd> > <kbd>File Colors</kbd>.
 
-To view/delete the scope, go to _Preferences > Appearance & Behavior > Scopes_.
+To view/delete the scope, go to <kbd>Preferences</kbd> > <kbd>Appearance & Behavior</kbd> > <kbd>Scopes</kbd>.
 <!-- Plugin description end -->
 
 ## Installation
 Download the [latest release](https://github.com/IanvsPoplicola/linguist-generated-scope-intellij-plugin/releases/latest) and install it manually using
 <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+
+Once installed, wait for the IDE to finish indexing project files, then click the <kbd>Sync Generated Files Scope</kbd>
+option at the bottom of the <kbd>Code</kbd> dropdown, as shown below:
+
+<img src="readme1.png" alt="readme1.png" width="50%"/>
+
+You can also press double Shift, and search for <kbd>Sync Generated Files Scope</kbd>.
+
+This action is idempotent, so feel free to run it again if your project's `.gitattributes` files have changed.
+It also won't overwrite your custom scope colour, if you have set one.
 
 ### Translating Git's pattern to IntelliJ scope's pattern
 This documents how the plugin's file pattern translation works, if you're interested.
