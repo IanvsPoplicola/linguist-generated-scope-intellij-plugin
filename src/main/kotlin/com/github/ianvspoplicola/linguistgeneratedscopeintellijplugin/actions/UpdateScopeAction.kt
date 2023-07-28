@@ -177,10 +177,10 @@ class UpdateScopeAction : AnAction() {
         }
 
         private fun getRelativeDirectoryPath(project: Project, file: VirtualFile): String {
-            val sourceRoot = ProjectFileIndex.getInstance(project).getSourceRootForFile(file)
+            val contentRoot = ProjectFileIndex.getInstance(project).getContentRootForFile(file)
             var currentDirectoryRelativePath = file.path
-            if (sourceRoot != null && VfsUtilCore.getRelativePath(file, sourceRoot) != null) {
-                currentDirectoryRelativePath = VfsUtilCore.getRelativePath(file, sourceRoot)!!
+            if (contentRoot != null && VfsUtilCore.getRelativePath(file, contentRoot) != null) {
+                currentDirectoryRelativePath = VfsUtilCore.getRelativePath(file, contentRoot)!!
             }
             return currentDirectoryRelativePath.removeSuffix(GITATTRIBUTES_FILE_NAME)
         }
