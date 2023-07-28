@@ -6,17 +6,6 @@
 
     <depends>com.intellij.modules.platform</depends>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.github.ianvspoplicola.linguistgeneratedscopeintellijplugin.services.MyApplicationService"/>
-        <projectService serviceImplementation="com.github.ianvspoplicola.linguistgeneratedscopeintellijplugin.services.MyProjectService"/>
-        <actionOnSave implementation="com.github.ianvspoplicola.linguistgeneratedscopeintellijplugin.listeners.UpdateScopeOnSave"/>
-    </extensions>
-
-    <applicationListeners>
-        <listener class="com.github.ianvspoplicola.linguistgeneratedscopeintellijplugin.listeners.MyProjectManagerListener"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
-    </applicationListeners>
-
     <actions>
         <action id="com.github.ianvspoplicola.linguistgeneratedscopeintellijplugin.actions.UpdateScopeAction"
                 class="com.github.ianvspoplicola.linguistgeneratedscopeintellijplugin.actions.UpdateScopeAction"
